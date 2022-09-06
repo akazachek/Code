@@ -70,10 +70,10 @@ mnist_test_x = mnist_test_x.reshape((num_test, 28*28))
 mnist_train_x = mnist_train_x.repeat_interleave(3, dim=1).to(DEVICE)
 mnist_test_x = mnist_test_x.repeat_interleave(3, dim=1).to(DEVICE)
 
-mnist_train_x_2 = mnist_test_x[:10000, ]
-mnist_train_y_2 = mnist_test_y[:10000]
-mnist_train_x = mnist_test_x[10000:, ]
-mnist_train_y = mnist_test_y[10000:]
+mnist_train_x_2 = mnist_train_x[:10000, ]
+mnist_train_y_2 = mnist_train_y[:10000]
+mnist_train_x = mnist_train_x[10000:, ]
+mnist_train_y = mnist_train_y[10000:]
 
 layers = [28*28*3, 50, 50, 10]
 nu = 1e1
@@ -87,7 +87,7 @@ batch = 16
 print("==================== model 1 ====================")
 print("starting first phase...\n")
 model = dirichlet_net(layers, mnist_train_x, mnist_train_y,
-                      mnist_m_train_x).to(DEVICE)
+                      mnist_train_x_2).to(DEVICE)
 model.train(num_iter=first_iters, batch_size=batch, nu=nu,
             eta=eta, log=True, dirichlet=False)
 
@@ -108,7 +108,7 @@ model.test(mnist_m_test_x, mnist_test_y, log=True)
 print("==================== model 2 ====================")
 print("starting first phase...\n")
 model2 = dirichlet_net(layers, mnist_train_x, mnist_train_y,
-                       mnist_m_train_x).to(DEVICE)
+                       mnist_train_x_2).to(DEVICE)
 model2.train(num_iter=first_iters, batch_size=batch, nu=nu,
              eta=eta, log=True, dirichlet=False)
 
@@ -130,7 +130,7 @@ model2.test(mnist_m_test_x, mnist_test_y, log=True)
 print("==================== model 3 ====================")
 print("starting first phase...\n")
 model3 = dirichlet_net(layers, mnist_train_x, mnist_train_y,
-                       mnist_m_train_x).to(DEVICE)
+                       mnist_train_x_2).to(DEVICE)
 model3.train(num_iter=first_iters, batch_size=batch, nu=nu,
              eta=eta, log=True, dirichlet=True)
 
