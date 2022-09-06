@@ -70,12 +70,80 @@ mnist_test_x = mnist_test_x.reshape((num_test, 28*28))
 mnist_train_x = mnist_train_x.repeat_interleave(3, dim=1).to(DEVICE)
 mnist_test_x = mnist_test_x.repeat_interleave(3, dim=1).to(DEVICE)
 
+mnist_train_x_2 = mnist_test_x[:10000, ]
+mnist_train_y_2 = mnist_test_y[:10000]
+mnist_train_x = mnist_test_x[10000:, ]
+mnist_train_y = mnist_test_y[10000:]
+
 layers = [28*28*3, 50, 50, 10]
+nu = 1e1
+eta = 1.
+first_iters = 3501
+second_iters = 3501
+batch = 16
+
+# model training without hypothesis risk (just cross-entropy)
+# at start, then refined using hypothesis-risk
+print("==================== model 1 ====================")
+print("starting first phase...\n")
 model = dirichlet_net(layers, mnist_train_x, mnist_train_y,
                       mnist_m_train_x).to(DEVICE)
+model.train(num_iter=first_iters, batch_size=batch, nu=nu,
+            eta=eta, log=True, dirichlet=False)
 
-model.train(num_iter=1000, batch_size=16,
-            eta=1e7, log=True, dirichlet=True)
-
+print("\ntesting on source...")
 model.test(mnist_test_x, mnist_test_y, log=True)
+print("\ntesting on target...")
 model.test(mnist_m_test_x, mnist_test_y, log=True)
+
+print("\nstarting second phase...\n")
+model.train(num_iter=second_iters, batch_size=batch, nu=nu,
+            eta=eta, log=True, dirichlet=True)
+print("\ntesting on source...")
+model.test(mnist_test_x, mnist_test_y, log=True)
+print("\ntesting on target...")
+model.test(mnist_m_test_x, mnist_test_y, log=True)
+
+# model training only using cross-entropy
+print("==================== model 2 ====================")
+print("starting first phase...\n")
+model2 = dirichlet_net(layers, mnist_train_x, mnist_train_y,
+                       mnist_m_train_x).to(DEVICE)
+model2.train(num_iter=first_iters, batch_size=batch, nu=nu,
+             eta=eta, log=True, dirichlet=False)
+
+print("\ntesting on source...")
+model2.test(mnist_test_x, mnist_test_y, log=True)
+print("\ntesting on target...")
+model2.test(mnist_m_test_x, mnist_test_y, log=True)
+
+print("\nstarting second phase...\n")
+model2.train(num_iter=second_iters, batch_size=batch, nu=nu,
+             eta=eta, log=True, dirichlet=False)
+print("\ntesting on source...")
+model2.test(mnist_test_x, mnist_test_y, log=True)
+print("\ntesting on target...")
+model2.test(mnist_m_test_x, mnist_test_y, log=True)
+
+# model training using cross-entropy and dirichlet cost
+# the whole time
+print("==================== model 3 ====================")
+print("starting first phase...\n")
+model3 = dirichlet_net(layers, mnist_train_x, mnist_train_y,
+                       mnist_m_train_x).to(DEVICE)
+model3.train(num_iter=first_iters, batch_size=batch, nu=nu,
+             eta=eta, log=True, dirichlet=True)
+
+print("\ntesting on source...")
+model3.test(mnist_test_x, mnist_test_y, log=True)
+print("\ntesting on target...")
+model3.test(mnist_m_test_x, mnist_test_y, log=True)
+
+print("\nstarting second phase...\n")
+model3.train(num_iter=second_iters, batch_size=batch, nu=nu,
+             eta=eta, log=True, dirichlet=True)
+
+print("\ntesting on source...")
+model3.test(mnist_test_x, mnist_test_y, log=True)
+print("\ntesting on target...")
+model3.test(mnist_m_test_x, mnist_test_y, log=True)

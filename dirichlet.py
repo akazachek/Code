@@ -131,8 +131,9 @@ def dirichlet_cost(P, Q, reg=1., max_iter=1000, log=False):
     # to prevent numerical errors
     # costs /= np.min(costs)
 
-    transport_plan = ot.sinkhorn(
-        P_empirical, Q_empirical, costs, reg, numItermax=max_iter)
+    #transport_plan = ot.sinkhorn(P_empirical, Q_empirical, costs, reg, numItermax=max_iter)
+    transport_plan = ot.emd(P_empirical, Q_empirical, costs)
+
     if log:
         print("Transporation Plan:")
         print(transport_plan)
