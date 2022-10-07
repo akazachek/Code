@@ -76,10 +76,11 @@ mnist_train_x = mnist_train_x[10000:, ]
 mnist_train_y = mnist_train_y[10000:]
 
 layers = [28*28*3, 50, 50, 10]
-nu = 1e1
+nu = 2.
 eta = 1.
+gamma = 1.
 first_iters = 3501
-second_iters = 3501
+second_iters = 2001
 batch = 16
 
 # model training without hypothesis risk (just cross-entropy)
@@ -88,8 +89,7 @@ print("==================== model 1 ====================")
 print("starting first phase...\n")
 model = dirichlet_net(layers, mnist_train_x, mnist_train_y,
                       mnist_train_x_2).to(DEVICE)
-model.train(num_iter=first_iters, batch_size=batch, nu=nu,
-            eta=eta, log=True, dirichlet=False)
+model.train(num_iter=first_iters, batch_size=batch, log=True)
 
 print("\ntesting on source...")
 model.test(mnist_test_x, mnist_test_y, log=True)
@@ -97,53 +97,12 @@ print("\ntesting on target...")
 model.test(mnist_m_test_x, mnist_test_y, log=True)
 
 print("\nstarting second phase...\n")
-model.train(num_iter=second_iters, batch_size=batch, nu=nu,
-            eta=eta, log=True, dirichlet=True)
-print("\ntesting on source...")
-model.test(mnist_test_x, mnist_test_y, log=True)
-print("\ntesting on target...")
-model.test(mnist_m_test_x, mnist_test_y, log=True)
-
-# model training only using cross-entropy
-print("==================== model 2 ====================")
-print("starting first phase...\n")
-model2 = dirichlet_net(layers, mnist_train_x, mnist_train_y,
-                       mnist_train_x_2).to(DEVICE)
-model2.train(num_iter=first_iters, batch_size=batch, nu=nu,
-             eta=eta, log=True, dirichlet=False)
+model_dir = dirichlet_net(layers, mnist_train_x, mnist_train_y,
+                          mnist_train_x_2).to(DEVICE)
+model_dir.train_dirichlet(model, num_iter=second_iters, batch_size=batch, nu=nu,
+                          eta=eta, gamma=gamma, log=True)
 
 print("\ntesting on source...")
-model2.test(mnist_test_x, mnist_test_y, log=True)
+model_dir.test(mnist_test_x, mnist_test_y, log=True)
 print("\ntesting on target...")
-model2.test(mnist_m_test_x, mnist_test_y, log=True)
-
-print("\nstarting second phase...\n")
-model2.train(num_iter=second_iters, batch_size=batch, nu=nu,
-             eta=eta, log=True, dirichlet=False)
-print("\ntesting on source...")
-model2.test(mnist_test_x, mnist_test_y, log=True)
-print("\ntesting on target...")
-model2.test(mnist_m_test_x, mnist_test_y, log=True)
-
-# model training using cross-entropy and dirichlet cost
-# the whole time
-print("==================== model 3 ====================")
-print("starting first phase...\n")
-model3 = dirichlet_net(layers, mnist_train_x, mnist_train_y,
-                       mnist_train_x_2).to(DEVICE)
-model3.train(num_iter=first_iters, batch_size=batch, nu=nu,
-             eta=eta, log=True, dirichlet=True)
-
-print("\ntesting on source...")
-model3.test(mnist_test_x, mnist_test_y, log=True)
-print("\ntesting on target...")
-model3.test(mnist_m_test_x, mnist_test_y, log=True)
-
-print("\nstarting second phase...\n")
-model3.train(num_iter=second_iters, batch_size=batch, nu=nu,
-             eta=eta, log=True, dirichlet=True)
-
-print("\ntesting on source...")
-model3.test(mnist_test_x, mnist_test_y, log=True)
-print("\ntesting on target...")
-model3.test(mnist_m_test_x, mnist_test_y, log=True)
+model_dir.test(mnist_m_test_x, mnist_test_y, log=True)
